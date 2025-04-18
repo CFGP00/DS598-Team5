@@ -21,7 +21,17 @@
 					"name": "AppleSink"
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "RenameColumns"
+				},
+				{
+					"name": "DerivedColumns"
+				},
+				{
+					"name": "Filter"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          Date as string,",
@@ -34,9 +44,28 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     documentForm: 'documentPerLine',",
-				"     wildcardPaths:['https://team5storageaccount.blob.core.windows.net/team5container/Bronze/Historical Stock/applestock.json']) ~> AppleTicker",
-				"AppleTicker sink(allowSchemaDrift: true,",
+				"     documentForm: 'arrayOfDocuments',",
+				"     wildcardPaths:['Bronze/Historical Stock/appleticker.json']) ~> AppleTicker",
+				"AppleTicker select(mapColumn(",
+				"          Trade_date = Date,",
+				"          Close = {Close/Last},",
+				"          Volume,",
+				"          Open,",
+				"          High,",
+				"          Low",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
+				"RenameColumns derive(Open = toFloat(replace(trim(Open), \"$\", \"\")),",
+				"          High = toFloat(replace(trim(High), \"$\", \"\")),",
+				"          Low = toFloat(replace(trim(Low), \"$\", \"\")),",
+				"          Close = toFloat(replace(trim(Close), \"$\", \"\")),",
+				"          Volume = toInteger(Volume),",
+				"          Trade_date = toDate(trim(Trade_date), 'MM/dd/yyyy'),",
+				"          Year = year(toDate(trim(Trade_date), 'MM/dd/yyyy')),",
+				"          Month = month(toDate(trim(Trade_date), 'MM/dd/yyyy'))) ~> DerivedColumns",
+				"DerivedColumns filter(isNull(Trade_date) == false() && isNull(Close) == false() && Close > 0) ~> Filter",
+				"Filter sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'parquet',",
 				"     skipDuplicateMapInputs: true,",
