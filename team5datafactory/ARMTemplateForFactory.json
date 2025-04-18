@@ -1,0 +1,271 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "team5datafactory"
+		},
+		"team5service_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'team5service'"
+		},
+		"Alphavantage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://www.alphavantage.co/"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/stockpipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copydatastock",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET",
+								"paginationRules": {
+									"supportRFC5988": "true"
+								}
+							},
+							"sink": {
+								"type": "JsonSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "JsonWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "applestocksource",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "historicalstockapple",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/applestocksource')]",
+				"[concat(variables('factoryId'), '/datasets/historicalstockapple')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/applestocksource')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Alphavantage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "RestResource",
+				"typeProperties": {
+					"relativeUrl": "query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=AAPL&apikey=9T0M7OWA1XR327OM&datatype=csv"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Alphavantage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/historicalstockapple')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "team5service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "Bronze/Historical Stock",
+						"container": "team5container"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"url": {
+							"type": "string"
+						},
+						"product_name": {
+							"type": "string"
+						},
+						"product_rating": {
+							"type": "number"
+						},
+						"product_rating_object": {
+							"type": "object",
+							"properties": {
+								"one_star": {
+									"type": "integer"
+								},
+								"two_star": {
+									"type": "integer"
+								},
+								"three_star": {
+									"type": "integer"
+								},
+								"four_star": {
+									"type": "integer"
+								},
+								"five_star": {
+									"type": "integer"
+								}
+							}
+						},
+						"product_rating_max": {
+							"type": "integer"
+						},
+						"rating": {
+							"type": "integer"
+						},
+						"author_name": {
+							"type": "string"
+						},
+						"asin": {
+							"type": "string"
+						},
+						"product_rating_count": {
+							"type": "integer"
+						},
+						"review_header": {
+							"type": "string"
+						},
+						"review_id": {
+							"type": "string"
+						},
+						"review_text": {
+							"type": "string"
+						},
+						"author_id": {
+							"type": "string"
+						},
+						"author_link": {
+							"type": "string"
+						},
+						"badge": {
+							"type": "string"
+						},
+						"brand": {
+							"type": "string"
+						},
+						"review_posted_date": {
+							"type": "string"
+						},
+						"review_country": {
+							"type": "string"
+						},
+						"helpful_count": {
+							"type": "integer"
+						},
+						"is_amazon_vine": {
+							"type": "boolean"
+						},
+						"is_verified": {
+							"type": "boolean"
+						},
+						"variant_asin": {
+							"type": "null"
+						},
+						"variant_name": {
+							"type": "null"
+						},
+						"videos": {
+							"type": "null"
+						},
+						"timestamp": {
+							"type": "string"
+						},
+						"input": {
+							"type": "object",
+							"properties": {
+								"url": {
+									"type": "string"
+								}
+							}
+						},
+						"review_images": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Alphavantage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "RestService",
+				"typeProperties": {
+					"url": "[parameters('Alphavantage_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/team5service')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('team5service_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

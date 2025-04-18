@@ -1,0 +1,15 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "team5datafactory"
+		},
+		"team5service_connectionString": {
+			"value": ""
+		},
+		"Alphavantage_properties_typeProperties_url": {
+			"value": "https://www.alphavantage.co/"
+		}
+	}
+}
