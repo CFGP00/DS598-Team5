@@ -9,7 +9,7 @@
 			"value": ""
 		},
 		"Alphavantage_properties_typeProperties_url": {
-			"value": "https://www.alphavantage.co/"
+			"value": "https://api.polygon.io/"
 		},
 		"containerUri": {
 			"value": ""

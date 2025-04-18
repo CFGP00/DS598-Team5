@@ -13,7 +13,7 @@
 		},
 		"Alphavantage_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://www.alphavantage.co/"
+			"defaultValue": "https://api.polygon.io/"
 		},
 		"containerUri": {
 			"type": "string",

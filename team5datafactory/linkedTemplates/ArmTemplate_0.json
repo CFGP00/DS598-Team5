@@ -13,7 +13,7 @@
 		},
 		"Alphavantage_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://www.alphavantage.co/"
+			"defaultValue": "https://api.polygon.io/"
 		}
 	},
 	"variables": {
@@ -60,7 +60,7 @@
 				"annotations": [],
 				"type": "RestResource",
 				"typeProperties": {
-					"relativeUrl": "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=AAPL&apikey=9TOM7OWA1XR327OM"
+					"relativeUrl": "v2/aggs/ticker/AAPL/range/1/day/2020-01-01/2024-12-31?adjusted=true&sort=asc&apiKey=ZvBnOSu8QjKjr5eFdv95gF1pA4pXW24S"
 				},
 				"schema": []
 			},
