@@ -1,0 +1,68 @@
+{
+	"name": "appleticker_dataflow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "historicalstockapple",
+						"type": "DatasetReference"
+					},
+					"name": "AppleTicker"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "tickersink",
+						"type": "DatasetReference"
+					},
+					"name": "AppleSink"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          url as string,",
+				"          product_name as string,",
+				"          product_rating as double,",
+				"          product_rating_object as (one_star as integer, two_star as integer, three_star as integer, four_star as integer, five_star as integer),",
+				"          product_rating_max as integer,",
+				"          rating as integer,",
+				"          author_name as string,",
+				"          asin as string,",
+				"          product_rating_count as integer,",
+				"          review_header as string,",
+				"          review_id as string,",
+				"          review_text as string,",
+				"          author_id as string,",
+				"          author_link as string,",
+				"          badge as string,",
+				"          brand as string,",
+				"          review_posted_date as string,",
+				"          review_country as string,",
+				"          helpful_count as integer,",
+				"          is_amazon_vine as boolean,",
+				"          is_verified as boolean,",
+				"          variant_asin as string,",
+				"          variant_name as string,",
+				"          videos as string,",
+				"          timestamp as string,",
+				"          input as (url as string),",
+				"          review_images as string[]",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'documentPerLine',",
+				"     wildcardPaths:['https://team5storageaccount.blob.core.windows.net/team5container/Bronze/Historical Stock/applestock.json']) ~> AppleTicker",
+				"AppleTicker sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> AppleSink"
+			]
+		}
+	}
+}
