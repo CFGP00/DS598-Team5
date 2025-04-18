@@ -1,0 +1,42 @@
+{
+	"name": "tickersource",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "team5service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "appleticker.json",
+				"folderPath": "Bronze/Historical Stock",
+				"container": "team5container"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"Date": {
+					"type": "string"
+				},
+				"Close/Last": {
+					"type": "string"
+				},
+				"Volume": {
+					"type": "integer"
+				},
+				"Open": {
+					"type": "string"
+				},
+				"High": {
+					"type": "string"
+				},
+				"Low": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}
