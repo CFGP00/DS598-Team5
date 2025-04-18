@@ -97,7 +97,7 @@
 				"annotations": [],
 				"type": "RestResource",
 				"typeProperties": {
-					"relativeUrl": "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&outputsize=full&apikey=9TOM7OWA1XR327OM"
+					"relativeUrl": "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=AAPL&apikey=9TOM7OWA1XR327OM"
 				},
 				"schema": []
 			},
