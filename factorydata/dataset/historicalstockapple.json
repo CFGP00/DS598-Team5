@@ -10,6 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
+				"fileName": "appleticker.json",
 				"folderPath": "Bronze/Historical Stock",
 				"container": "team5container"
 			}
