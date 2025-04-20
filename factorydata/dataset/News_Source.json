@@ -1,0 +1,33 @@
+{
+	"name": "News_Source",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "team5service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "apple_news_headlinesCORRECT.json",
+				"folderPath": "Bronze/News",
+				"container": "team5container"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"title": {
+					"type": "string"
+				},
+				"publishedAt": {
+					"type": "string"
+				},
+				"url": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}
