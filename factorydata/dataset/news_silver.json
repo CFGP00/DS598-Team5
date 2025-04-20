@@ -1,0 +1,20 @@
+{
+	"name": "news_silver",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "team5service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "Silver/News",
+				"container": "team5container"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}
