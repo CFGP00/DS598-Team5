@@ -276,6 +276,69 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/News_Source')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "team5service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "apple_news_headlinesCORRECT.json",
+						"folderPath": "Bronze/News",
+						"container": "team5container"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"title": {
+							"type": "string"
+						},
+						"publishedAt": {
+							"type": "string"
+						},
+						"url": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/news_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "team5service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "Silver/News",
+						"container": "team5container"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/stockpipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -423,6 +486,82 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/news_dataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "News_Source",
+								"type": "DatasetReference"
+							},
+							"name": "newssilver",
+							"description": "This is unrolling our news json into "
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "news_silver",
+								"type": "DatasetReference"
+							},
+							"name": "silver",
+							"description": "going to silver!"
+						}
+					],
+					"transformations": [
+						{
+							"name": "RenamingColumns"
+						},
+						{
+							"name": "ReformattingDate"
+						},
+						{
+							"name": "DateToDay",
+							"description": "get date up to the day"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          title as string,",
+						"          publishedAt as string,",
+						"          url as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     documentForm: 'singleDocument') ~> newssilver",
+						"newssilver derive(date_released = publishedAt) ~> RenamingColumns",
+						"RenamingColumns derive(date_released = toTimestamp(publishedAt, 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\'')) ~> ReformattingDate",
+						"ReformattingDate derive(date_released = toDate(toTimestamp(publishedAt, 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''))",
+						") ~> DateToDay",
+						"DateToDay select(mapColumn(",
+						"          title,",
+						"          url,",
+						"          date_released",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> silver"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/News_Source')]",
+				"[concat(variables('factoryId'), '/datasets/news_silver')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ticker_dataflow')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -466,6 +605,53 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/appleticker_dataflow')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/news_dataflow')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "News_Bronze_To_Silver",
+						"description": "Standardized date",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "news_dataflow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"newssilver": {},
+									"silver": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/news_dataflow')]"
 			]
 		}
 	]
