@@ -49,6 +49,44 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/News_Source')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "team5service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "apple_news_headlinesCORRECT.json",
+						"folderPath": "Bronze/News",
+						"container": "team5container"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"title": {
+							"type": "string"
+						},
+						"publishedAt": {
+							"type": "string"
+						},
+						"url": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/applestocksource')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -204,6 +242,31 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/news_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "team5service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "Silver/News",
+						"container": "team5container"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/tickersink')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -270,69 +333,6 @@
 						}
 					}
 				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/News_Source')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "team5service",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "apple_news_headlinesCORRECT.json",
-						"folderPath": "Bronze/News",
-						"container": "team5container"
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"title": {
-							"type": "string"
-						},
-						"publishedAt": {
-							"type": "string"
-						},
-						"url": {
-							"type": "string"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/news_silver')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "team5service",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"folderPath": "Silver/News",
-						"container": "team5container"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
@@ -536,11 +536,10 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
-						"     documentForm: 'singleDocument') ~> newssilver",
+						"     documentForm: 'arrayOfDocuments') ~> newssilver",
 						"newssilver derive(date_released = publishedAt) ~> RenamingColumns",
 						"RenamingColumns derive(date_released = toTimestamp(publishedAt, 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\'')) ~> ReformattingDate",
-						"ReformattingDate derive(date_released = toDate(toTimestamp(publishedAt, 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''))",
-						") ~> DateToDay",
+						"ReformattingDate derive(date_released = toDate(toTimestamp(publishedAt, 'yyyy-MM-dd\\'T\\'HH:mm:ss\\'Z\\''))) ~> DateToDay",
 						"DateToDay select(mapColumn(",
 						"          title,",
 						"          url,",
@@ -559,52 +558,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/News_Source')]",
 				"[concat(variables('factoryId'), '/datasets/news_silver')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ticker_dataflow')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "appleticker_dataflow",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "appleticker_dataflow",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"AppleTicker": {},
-									"AppleSink": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/appleticker_dataflow')]"
 			]
 		},
 		{
@@ -652,6 +605,52 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/news_dataflow')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ticker_dataflow')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "appleticker_dataflow",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "appleticker_dataflow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"AppleTicker": {},
+									"AppleSink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/appleticker_dataflow')]"
 			]
 		}
 	]
