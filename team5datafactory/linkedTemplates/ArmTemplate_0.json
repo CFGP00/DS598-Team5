@@ -962,7 +962,8 @@
 						"     validateSchema: false,",
 						"     format: 'parquet',",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> SinktoSilver"
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> SinktoSilver"
 					]
 				}
 			},
