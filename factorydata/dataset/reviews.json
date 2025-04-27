@@ -1,0 +1,20 @@
+{
+	"name": "reviews",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "team5service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "Silver/Product Reviews",
+				"container": "team5container"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

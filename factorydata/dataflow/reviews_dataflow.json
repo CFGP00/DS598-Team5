@@ -1,0 +1,161 @@
+{
+	"name": "reviews_dataflow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "applereviews1",
+						"type": "DatasetReference"
+					},
+					"name": "ReviewsSource1"
+				},
+				{
+					"dataset": {
+						"referenceName": "applereviews2",
+						"type": "DatasetReference"
+					},
+					"name": "ReviewsSource2"
+				},
+				{
+					"dataset": {
+						"referenceName": "applereviews3",
+						"type": "DatasetReference"
+					},
+					"name": "ReviewsSource3"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "reviews",
+						"type": "DatasetReference"
+					},
+					"name": "SinktoSilver"
+				}
+			],
+			"transformations": [
+				{
+					"name": "FilterandRenameColumns2"
+				},
+				{
+					"name": "RenameColumns"
+				},
+				{
+					"name": "FilterandRenameColumns"
+				},
+				{
+					"name": "DeriveDate1"
+				},
+				{
+					"name": "DeriveDate2"
+				},
+				{
+					"name": "DeriveDate3"
+				},
+				{
+					"name": "UnionReviews"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          number as integer,",
+				"          category as string,",
+				"          rating as integer,",
+				"          product as string,",
+				"          helpful_count as integer,",
+				"          crawled_at as string,",
+				"          sub_category as string,",
+				"          asin as string,",
+				"          review_country as string,",
+				"          raw_description as string,",
+				"          description as string,",
+				"          profile_name as string,",
+				"          reviewed_at as string,",
+				"          {_id} as string,",
+				"          average_rating as double,",
+				"          product_company as string,",
+				"          review_title as string,",
+				"          review_uniq_id as string,",
+				"          images as string,",
+				"          verified_purchase as string,",
+				"          total_comments as integer,",
+				"          reviewed_on as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> ReviewsSource1",
+				"source(output(",
+				"          number as integer,",
+				"          product as string,",
+				"          title as string,",
+				"          date as string,",
+				"          rating as integer,",
+				"          body as string,",
+				"          review_date as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> ReviewsSource2",
+				"source(output(",
+				"          productAsin as string,",
+				"          country as string,",
+				"          date as string,",
+				"          isVerified as string,",
+				"          ratingScore as string,",
+				"          reviewTitle as string,",
+				"          reviewDescription as string,",
+				"          variantAsin as string,",
+				"          {Service Providers} as string,",
+				"          Colors as string,",
+				"          Sizes as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> ReviewsSource3",
+				"ReviewsSource1 select(mapColumn(",
+				"          product,",
+				"          review_text = description,",
+				"          review_title,",
+				"          rating,",
+				"          review_date = reviewed_on",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> FilterandRenameColumns2",
+				"ReviewsSource2 select(mapColumn(",
+				"          product,",
+				"          review_text = body,",
+				"          review_title = title,",
+				"          rating,",
+				"          review_date",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
+				"ReviewsSource3 select(mapColumn(",
+				"          product = productAsin,",
+				"          review_text = reviewDescription,",
+				"          review_title = reviewTitle,",
+				"          rating = ratingScore,",
+				"          review_date = date",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> FilterandRenameColumns",
+				"FilterandRenameColumns2 derive(review_date = toDate(review_date),",
+				"          rating = toString(rating)) ~> DeriveDate1",
+				"RenameColumns derive(review_date = toDate(review_date),",
+				"          rating = toString(rating)) ~> DeriveDate2",
+				"FilterandRenameColumns derive(review_date = toDate(review_date, 'M/d/yy'),",
+				"          rating = toString(rating)) ~> DeriveDate3",
+				"DeriveDate1, DeriveDate2, DeriveDate3 union(byName: true)~> UnionReviews",
+				"UnionReviews sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SinktoSilver"
+			]
+		}
+	}
+}

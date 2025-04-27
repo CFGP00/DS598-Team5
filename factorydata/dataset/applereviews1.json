@@ -1,0 +1,90 @@
+{
+	"name": "applereviews1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "team5service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "apple_reviews.json",
+				"folderPath": "Bronze/Product Reviews",
+				"container": "team5container"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"": {
+					"type": "integer"
+				},
+				"category": {
+					"type": "string"
+				},
+				"rating": {
+					"type": "integer"
+				},
+				"product": {
+					"type": "string"
+				},
+				"helpful_count": {
+					"type": "integer"
+				},
+				"crawled_at": {
+					"type": "string"
+				},
+				"sub_category": {
+					"type": "string"
+				},
+				"asin": {
+					"type": "string"
+				},
+				"review_country": {
+					"type": "string"
+				},
+				"raw_description": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"profile_name": {
+					"type": "string"
+				},
+				"reviewed_at": {
+					"type": "string"
+				},
+				"_id": {
+					"type": "string"
+				},
+				"average_rating": {
+					"type": "number"
+				},
+				"product_company": {
+					"type": "string"
+				},
+				"review_title": {
+					"type": "string"
+				},
+				"review_uniq_id": {
+					"type": "string"
+				},
+				"images": {
+					"type": "null"
+				},
+				"verified_purchase": {
+					"type": "string"
+				},
+				"total_comments": {
+					"type": "integer"
+				},
+				"reviewed_on": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}

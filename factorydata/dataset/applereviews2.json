@@ -1,0 +1,45 @@
+{
+	"name": "applereviews2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "team5service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "apple_reviews1.json",
+				"folderPath": "Bronze/Product Reviews",
+				"container": "team5container"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"": {
+					"type": "integer"
+				},
+				"product": {
+					"type": "string"
+				},
+				"title": {
+					"type": "string"
+				},
+				"date": {
+					"type": "string"
+				},
+				"rating": {
+					"type": "integer"
+				},
+				"body": {
+					"type": "string"
+				},
+				"review_date": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}

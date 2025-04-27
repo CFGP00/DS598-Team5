@@ -1,0 +1,69 @@
+{
+	"name": "applereviews3",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "team5service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "apple_reviews2.csv",
+				"folderPath": "Bronze/Product Reviews",
+				"container": "team5container"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "productAsin",
+				"type": "String"
+			},
+			{
+				"name": "country",
+				"type": "String"
+			},
+			{
+				"name": "date",
+				"type": "String"
+			},
+			{
+				"name": "isVerified",
+				"type": "String"
+			},
+			{
+				"name": "ratingScore",
+				"type": "String"
+			},
+			{
+				"name": "reviewTitle",
+				"type": "String"
+			},
+			{
+				"name": "reviewDescription",
+				"type": "String"
+			},
+			{
+				"name": "variantAsin",
+				"type": "String"
+			},
+			{
+				"name": "Service Providers",
+				"type": "String"
+			},
+			{
+				"name": "Colors",
+				"type": "String"
+			},
+			{
+				"name": "Sizes",
+				"type": "String"
+			}
+		]
+	}
+}
