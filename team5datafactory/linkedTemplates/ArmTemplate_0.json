@@ -87,6 +87,225 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/applereviews1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "team5service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "apple_reviews.json",
+						"folderPath": "Bronze/Product Reviews",
+						"container": "team5container"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"": {
+							"type": "integer"
+						},
+						"category": {
+							"type": "string"
+						},
+						"rating": {
+							"type": "integer"
+						},
+						"product": {
+							"type": "string"
+						},
+						"helpful_count": {
+							"type": "integer"
+						},
+						"crawled_at": {
+							"type": "string"
+						},
+						"sub_category": {
+							"type": "string"
+						},
+						"asin": {
+							"type": "string"
+						},
+						"review_country": {
+							"type": "string"
+						},
+						"raw_description": {
+							"type": "string"
+						},
+						"description": {
+							"type": "string"
+						},
+						"profile_name": {
+							"type": "string"
+						},
+						"reviewed_at": {
+							"type": "string"
+						},
+						"_id": {
+							"type": "string"
+						},
+						"average_rating": {
+							"type": "number"
+						},
+						"product_company": {
+							"type": "string"
+						},
+						"review_title": {
+							"type": "string"
+						},
+						"review_uniq_id": {
+							"type": "string"
+						},
+						"images": {
+							"type": "null"
+						},
+						"verified_purchase": {
+							"type": "string"
+						},
+						"total_comments": {
+							"type": "integer"
+						},
+						"reviewed_on": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/applereviews2')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "team5service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "apple_reviews1.json",
+						"folderPath": "Bronze/Product Reviews",
+						"container": "team5container"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"": {
+							"type": "integer"
+						},
+						"product": {
+							"type": "string"
+						},
+						"title": {
+							"type": "string"
+						},
+						"date": {
+							"type": "string"
+						},
+						"rating": {
+							"type": "integer"
+						},
+						"body": {
+							"type": "string"
+						},
+						"review_date": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/applereviews3')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "team5service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "apple_reviews2.csv",
+						"folderPath": "Bronze/Product Reviews",
+						"container": "team5container"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "productAsin",
+						"type": "String"
+					},
+					{
+						"name": "country",
+						"type": "String"
+					},
+					{
+						"name": "date",
+						"type": "String"
+					},
+					{
+						"name": "isVerified",
+						"type": "String"
+					},
+					{
+						"name": "ratingScore",
+						"type": "String"
+					},
+					{
+						"name": "reviewTitle",
+						"type": "String"
+					},
+					{
+						"name": "reviewDescription",
+						"type": "String"
+					},
+					{
+						"name": "variantAsin",
+						"type": "String"
+					},
+					{
+						"name": "Service Providers",
+						"type": "String"
+					},
+					{
+						"name": "Colors",
+						"type": "String"
+					},
+					{
+						"name": "Sizes",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/applestocksource')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -267,6 +486,31 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/reviews')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "team5service",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"folderPath": "Silver/Product Reviews",
+						"container": "team5container"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/tickersink')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -339,102 +583,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/applereviews1')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "team5service",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "apple_reviews.json",
-						"folderPath": "Bronze/Product Reviews",
-						"container": "team5container"
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"": {
-							"type": "integer"
-						},
-						"category": {
-							"type": "string"
-						},
-						"rating": {
-							"type": "integer"
-						},
-						"product": {
-							"type": "string"
-						},
-						"helpful_count": {
-							"type": "integer"
-						},
-						"crawled_at": {
-							"type": "string"
-						},
-						"sub_category": {
-							"type": "string"
-						},
-						"asin": {
-							"type": "string"
-						},
-						"review_country": {
-							"type": "string"
-						},
-						"raw_description": {
-							"type": "string"
-						},
-						"description": {
-							"type": "string"
-						},
-						"profile_name": {
-							"type": "string"
-						},
-						"reviewed_at": {
-							"type": "string"
-						},
-						"_id": {
-							"type": "string"
-						},
-						"average_rating": {
-							"type": "number"
-						},
-						"product_company": {
-							"type": "string"
-						},
-						"review_title": {
-							"type": "string"
-						},
-						"review_uniq_id": {
-							"type": "string"
-						},
-						"images": {
-							"type": "null"
-						},
-						"verified_purchase": {
-							"type": "string"
-						},
-						"total_comments": {
-							"type": "integer"
-						},
-						"reviewed_on": {
-							"type": "string"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/applereviews3')]",
+			"name": "[concat(parameters('factoryName'), '/search_us')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -447,8 +596,8 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"fileName": "apple_reviews2.csv",
-						"folderPath": "Bronze/Product Reviews",
+						"fileName": "search_interest_us.csv",
+						"folderPath": "Bronze/Search Trends",
 						"container": "team5container"
 					},
 					"columnDelimiter": ",",
@@ -458,47 +607,7 @@
 				},
 				"schema": [
 					{
-						"name": "productAsin",
-						"type": "String"
-					},
-					{
-						"name": "country",
-						"type": "String"
-					},
-					{
-						"name": "date",
-						"type": "String"
-					},
-					{
-						"name": "isVerified",
-						"type": "String"
-					},
-					{
-						"name": "ratingScore",
-						"type": "String"
-					},
-					{
-						"name": "reviewTitle",
-						"type": "String"
-					},
-					{
-						"name": "reviewDescription",
-						"type": "String"
-					},
-					{
-						"name": "variantAsin",
-						"type": "String"
-					},
-					{
-						"name": "Service Providers",
-						"type": "String"
-					},
-					{
-						"name": "Colors",
-						"type": "String"
-					},
-					{
-						"name": "Sizes",
+						"name": "Category: All categories",
 						"type": "String"
 					}
 				]
@@ -508,7 +617,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/applereviews2')]",
+			"name": "[concat(parameters('factoryName'), '/search_us_sink')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -517,66 +626,101 @@
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
-				"type": "Json",
+				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"fileName": "apple_reviews1.json",
-						"folderPath": "Bronze/Product Reviews",
-						"container": "team5container"
-					}
-				},
-				"schema": {
-					"type": "object",
-					"properties": {
-						"": {
-							"type": "integer"
-						},
-						"product": {
-							"type": "string"
-						},
-						"title": {
-							"type": "string"
-						},
-						"date": {
-							"type": "string"
-						},
-						"rating": {
-							"type": "integer"
-						},
-						"body": {
-							"type": "string"
-						},
-						"review_date": {
-							"type": "string"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/reviews')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "team5service",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"folderPath": "Silver/Product Reviews",
+						"fileName": "search_us",
+						"folderPath": "Silver/Search Trends",
 						"container": "team5container"
 					},
-					"compressionCodec": "snappy"
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
 				},
-				"schema": []
+				"schema": [
+					{
+						"name": "category",
+						"type": "String"
+					},
+					{
+						"name": "rating",
+						"type": "String"
+					},
+					{
+						"name": "product",
+						"type": "String"
+					},
+					{
+						"name": "helpful_count",
+						"type": "String"
+					},
+					{
+						"name": "crawled_at",
+						"type": "String"
+					},
+					{
+						"name": "sub_category",
+						"type": "String"
+					},
+					{
+						"name": "asin",
+						"type": "String"
+					},
+					{
+						"name": "review_country",
+						"type": "String"
+					},
+					{
+						"name": "raw_description",
+						"type": "String"
+					},
+					{
+						"name": "description",
+						"type": "String"
+					},
+					{
+						"name": "profile_name",
+						"type": "String"
+					},
+					{
+						"name": "reviewed_at",
+						"type": "String"
+					},
+					{
+						"name": "_id",
+						"type": "String"
+					},
+					{
+						"name": "average_rating",
+						"type": "String"
+					},
+					{
+						"name": "product_company",
+						"type": "String"
+					},
+					{
+						"name": "review_title",
+						"type": "String"
+					},
+					{
+						"name": "review_uniq_id",
+						"type": "String"
+					},
+					{
+						"name": "images",
+						"type": "String"
+					},
+					{
+						"name": "verified_purchase",
+						"type": "String"
+					},
+					{
+						"name": "total_comments",
+						"type": "String"
+					}
+				]
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/team5service')]"
@@ -975,6 +1119,83 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/search_us_pipline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "search_us",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "search_us_sink",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/search_us')]",
+				"[concat(variables('factoryId'), '/datasets/search_us_sink')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/news_dataflow')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1019,100 +1240,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/news_dataflow')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ticker_dataflow')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "appleticker_dataflow",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "appleticker_dataflow",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"AppleTicker": {},
-									"AppleSink": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/appleticker_dataflow')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/reviews_dataflow')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "reviews_dataflow",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "reviews_dataflow",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"ReviewsSource1": {},
-									"ReviewsSource2": {},
-									"ReviewsSource3": {},
-									"SinktoSilver": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/reviews_dataflow')]"
 			]
 		}
 	]
