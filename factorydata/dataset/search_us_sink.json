@@ -1,0 +1,105 @@
+{
+	"name": "search_us_sink",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "team5service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "search_us",
+				"folderPath": "Silver/Search Trends",
+				"container": "team5container"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "category",
+				"type": "String"
+			},
+			{
+				"name": "rating",
+				"type": "String"
+			},
+			{
+				"name": "product",
+				"type": "String"
+			},
+			{
+				"name": "helpful_count",
+				"type": "String"
+			},
+			{
+				"name": "crawled_at",
+				"type": "String"
+			},
+			{
+				"name": "sub_category",
+				"type": "String"
+			},
+			{
+				"name": "asin",
+				"type": "String"
+			},
+			{
+				"name": "review_country",
+				"type": "String"
+			},
+			{
+				"name": "raw_description",
+				"type": "String"
+			},
+			{
+				"name": "description",
+				"type": "String"
+			},
+			{
+				"name": "profile_name",
+				"type": "String"
+			},
+			{
+				"name": "reviewed_at",
+				"type": "String"
+			},
+			{
+				"name": "_id",
+				"type": "String"
+			},
+			{
+				"name": "average_rating",
+				"type": "String"
+			},
+			{
+				"name": "product_company",
+				"type": "String"
+			},
+			{
+				"name": "review_title",
+				"type": "String"
+			},
+			{
+				"name": "review_uniq_id",
+				"type": "String"
+			},
+			{
+				"name": "images",
+				"type": "String"
+			},
+			{
+				"name": "verified_purchase",
+				"type": "String"
+			},
+			{
+				"name": "total_comments",
+				"type": "String"
+			}
+		]
+	}
+}
