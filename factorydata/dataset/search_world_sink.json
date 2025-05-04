@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": "search_world",
+				"fileName": "search_world.csv",
 				"folderPath": "Silver/Search Trends",
 				"container": "team5container"
 			},
