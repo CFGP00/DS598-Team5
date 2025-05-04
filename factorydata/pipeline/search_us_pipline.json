@@ -49,13 +49,13 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "search_us",
+						"referenceName": "searchsource",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "search_us_sink",
+						"referenceName": "searchtrends",
 						"type": "DatasetReference"
 					}
 				]
