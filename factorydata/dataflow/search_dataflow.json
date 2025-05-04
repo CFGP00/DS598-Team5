@@ -12,15 +12,50 @@
 					"name": "searchUS"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "searchtrends",
+						"type": "DatasetReference"
+					},
+					"name": "searchsink",
+					"description": "Export data to searchtrends\n",
+					"rejectedDataLinkedService": {
+						"referenceName": "team5service",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
+			"transformations": [
+				{
+					"name": "RenameColumns"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
-				"          {Category: All categories} as string",
+				"          Week as date,",
+				"          {iphone: (United States)} as short,",
+				"          {macbook: (United States)} as short,",
+				"          {ipad: (United States)} as short",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> searchUS"
+				"     ignoreNoFilesFound: false) ~> searchUS",
+				"searchUS select(mapColumn(",
+				"          date = Week,",
+				"          {iphone } = {iphone: (United States)},",
+				"          {macbook } = {macbook: (United States)},",
+				"          ipad = {ipad: (United States)}",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RenameColumns",
+				"RenameColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          {Category: All categories} as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> searchsink"
 			]
 		}
 	}

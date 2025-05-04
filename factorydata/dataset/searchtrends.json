@@ -1,0 +1,28 @@
+{
+	"name": "searchtrends",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "team5service",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "Silver/Search Trends",
+				"container": "team5container"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Category: All categories",
+				"type": "String"
+			}
+		]
+	}
+}
