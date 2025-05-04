@@ -18,15 +18,16 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "fa7e578d-ab80-41da-b0dd-9df571878a49"
+				"spark.autotune.trackingId": "f19d616e-bb14-4b03-9cd6-a9272324b8de"
 			}
 		},
 		"metadata": {
 			"saveOutput": true,
-			"synapse_widget": {
-				"version": "0.1"
-			},
 			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
 			"language_info": {
 				"name": "python"
 			},
@@ -37,14 +38,13 @@
 				"endpoint": "https://sentiment-analyses.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sentiment",
 				"auth": {
 					"type": "AAD",
-					"authResource": "https://dev.azuresynapse.net",
-					"authHeader": null
+					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.4",
 				"nodeCount": 10,
 				"cores": 4,
 				"memory": 28,
-				"extraHeader": null
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -52,16 +52,133 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"!pip install transformers --quiet\n",
-					"!pip install torch --quiet\n",
+					"from azure.storage.blob import BlobServiceClient\n",
+					"from io import BytesIO\n",
+					"import pandas as pd\n",
+					"import os\n",
+					"\n",
+					"connection_string = os.getenv(\"AZURE_STORAGE_CONNECTION_STRING\")\n",
+					"\n",
+					"container_name = \"team5container\"\n",
+					"blob_path = \"Silver/Product Reviews/reviews.parquet\"\n",
+					"\n",
+					"blob_service_client = BlobServiceClient.from_connection_string(connection_string)\n",
+					"blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_path)\n",
+					"\n",
+					"stream = BytesIO()\n",
+					"blob_client.download_blob().readinto(stream)\n",
+					"stream.seek(0)\n",
+					"\n",
+					"df = pd.read_parquet(stream)\n",
+					"df.head()"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"len(df)"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"!pip install transformers==4.30.2 torch==1.13.1 --quiet"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from transformers import pipeline\n",
+					"# Load Hugging Face sentiment analysis pipeline\n",
+					"sentiment_pipeline = pipeline(\"sentiment-analysis\")\n",
 					""
-				]
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"def classify_batch_with_rating(text_list, rating_list):\n",
+					"    results = sentiment_pipeline(text_list, truncation=True)\n",
+					"    output = []\n",
+					"    for res, rating in zip(results, rating_list):\n",
+					"        try:\n",
+					"            if int(rating) == 3:\n",
+					"                output.append(\"neutral\")  # Neutral from rating\n",
+					"            elif res['score'] < 0.65:\n",
+					"                output.append(\"neutral\")  # Neutral if model is uncertain\n",
+					"            else:\n",
+					"                output.append(\"positive\" if res['label'] == 'POSITIVE' else \"negative\")\n",
+					"        except:\n",
+					"            output.append(\"neutral\")\n",
+					"    return output\n",
+					"\n",
+					"# Run in batches\n",
+					"batch_size = 200\n",
+					"sentiments = []\n",
+					"\n",
+					"for i in range(0, len(df), batch_size):\n",
+					"    batch = df.iloc[i:i+batch_size]\n",
+					"    truncated_reviews = batch['review_text'].apply(lambda x: \" \".join(str(x).split()[:300])).tolist()\n",
+					"    ratings = batch['rating'].tolist()\n",
+					"    sentiments.extend(classify_batch_with_rating(truncated_reviews, ratings))\n",
+					"\n",
+					"df['sentiment'] = sentiments\n",
+					""
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df['sentiment'].value_counts()\n",
+					""
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df.head()"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import pyarrow as pa\n",
+					"import pyarrow.parquet as pq\n",
+					"\n",
+					"#Convert DataFrame to Parquet\n",
+					"table = pa.Table.from_pandas(df)\n",
+					"buffer = BytesIO()\n",
+					"pq.write_table(table, buffer)\n",
+					"buffer.seek(0)\n",
+					"\n",
+					"#Define path in your Gold layer\n",
+					"filename = f\"Gold/Product Reviews/reviews_with_sentiment.parquet\"\n",
+					"\n",
+					"# 3. Initialize blob client\n",
+					"connection_string = os.getenv(\"AZURE_STORAGE_CONNECTION_STRING\")\n",
+					"blob_service_client = BlobServiceClient.from_connection_string(connection_string)\n",
+					"blob_client = blob_service_client.get_blob_client(container=\"team5container\", blob=filename)\n",
+					"\n",
+					"# 4. Upload Parquet file\n",
+					"blob_client.upload_blob(buffer, overwrite=True)\n",
+					"print(f\"File uploaded successfully to: {filename}\")\n",
+					""
+				],
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					""
-				]
+				],
+				"execution_count": null
 			}
 		]
 	}
