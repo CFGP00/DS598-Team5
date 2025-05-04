@@ -19,7 +19,6 @@
 						"type": "DatasetReference"
 					},
 					"name": "searchsink",
-					"description": "Export data to searchtrends\n",
 					"rejectedDataLinkedService": {
 						"referenceName": "team5service",
 						"type": "LinkedServiceReference"
