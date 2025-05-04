@@ -1,0 +1,27 @@
+{
+	"name": "search_dataflow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "searchsource",
+						"type": "DatasetReference"
+					},
+					"name": "searchUS"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          {Category: All categories} as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> searchUS"
+			]
+		}
+	}
+}
