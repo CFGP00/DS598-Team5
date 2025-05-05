@@ -1,0 +1,339 @@
+{
+	"name": "model_training",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "model",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "d6958928-18ed-44b0-828a-91f067bdd3bd"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/3b608a14-90b7-42d9-82e2-77c947974137/resourceGroups/DS562-Team-5/providers/Microsoft.Synapse/workspaces/sentiment-analyses/bigDataPools/model",
+				"name": "model",
+				"type": "Spark",
+				"endpoint": "https://sentiment-analyses.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/model",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from azure.storage.blob import BlobServiceClient\n",
+					"from io import BytesIO\n",
+					"import pandas as pd\n",
+					"\n",
+					"connection_string = os.getenv(\"AZURE_STORAGE_CONNECTION_STRING\")\n",
+					"\n",
+					"container_name = \"team5container\"\n",
+					"blob_path = \"Gold/Historical Stock/apple_ticker.parquet\"\n",
+					"\n",
+					"blob_service_client = BlobServiceClient.from_connection_string(connection_string)\n",
+					"blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_path)\n",
+					"\n",
+					"stream = BytesIO()\n",
+					"blob_client.download_blob().readinto(stream)\n",
+					"stream.seek(0)\n",
+					"\n",
+					"df_h = pd.read_parquet(stream)\n",
+					"df_h.head()"
+				],
+				"execution_count": 103
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"connection_string = os.getenv(\"AZURE_STORAGE_CONNECTION_STRING\")\n",
+					"\n",
+					"container_name = \"team5container\"\n",
+					"blob_path = \"Gold/News/news_with_sentiment.parquet\"\n",
+					"\n",
+					"blob_service_client = BlobServiceClient.from_connection_string(connection_string)\n",
+					"blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_path)\n",
+					"\n",
+					"stream = BytesIO()\n",
+					"blob_client.download_blob().readinto(stream)\n",
+					"stream.seek(0)\n",
+					"\n",
+					"df_n = pd.read_parquet(stream)\n",
+					"df_n.head()"
+				],
+				"execution_count": 104
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"connection_string = os.getenv(\"AZURE_STORAGE_CONNECTION_STRING\")\n",
+					"\n",
+					"container_name = \"team5container\"\n",
+					"blob_path = \"Gold/Product Reviews/reviews_with_sentiment.parquet\"\n",
+					"\n",
+					"blob_service_client = BlobServiceClient.from_connection_string(connection_string)\n",
+					"blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_path)\n",
+					"\n",
+					"stream = BytesIO()\n",
+					"blob_client.download_blob().readinto(stream)\n",
+					"stream.seek(0)\n",
+					"\n",
+					"df_r = pd.read_parquet(stream)\n",
+					"df_r.head()"
+				],
+				"execution_count": 105
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"connection_string = os.getenv(\"AZURE_STORAGE_CONNECTION_STRING\")\n",
+					"\n",
+					"container_name = \"team5container\"\n",
+					"blob_path = \"Gold/Search Trends/trends_with_sentiment.parquet\"\n",
+					"\n",
+					"blob_service_client = BlobServiceClient.from_connection_string(connection_string)\n",
+					"blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_path)\n",
+					"\n",
+					"stream = BytesIO()\n",
+					"blob_client.download_blob().readinto(stream)\n",
+					"stream.seek(0)\n",
+					"\n",
+					"df_t = pd.read_parquet(stream)\n",
+					"df_t.head()"
+				],
+				"execution_count": 106
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# News sentiment\n",
+					"df_news = df_n[['date', 'sentiment']].copy()\n",
+					"df_news.rename(columns={'sentiment': 'sentiment_news'}, inplace=True)\n",
+					"\n",
+					"# Product reviews sentiment\n",
+					"df_reviews = df_r[['date', 'sentiment']].copy()\n",
+					"df_reviews.rename(columns={'sentiment': 'sentiment_reviews'}, inplace=True)\n",
+					"\n",
+					"# Search trend sentiment (already resampled in earlier step)\n",
+					"df_search = df_search_daily[['date', 'sentiment_search']].copy()"
+				],
+				"execution_count": 114
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df_h['date'] = pd.to_datetime(df_h['date'])\n",
+					"df_news['date'] = pd.to_datetime(df_news_daily['date'])\n",
+					"df_reviews['date'] = pd.to_datetime(df_reviews_daily['date'])\n",
+					"df_search['date'] = pd.to_datetime(df_search_daily['date'])"
+				],
+				"execution_count": 116
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df_h['date'] = pd.to_datetime(df_h['date'])  # ensure datetime\n",
+					"\n",
+					"df = df_h.merge(df_news, on='date', how='left') \\\n",
+					"         .merge(df_reviews, on='date', how='left') \\\n",
+					"         .merge(df_search, on='date', how='left')"
+				],
+				"execution_count": 117
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df[['sentiment_news', 'sentiment_reviews', 'sentiment_search']] = df[\n",
+					"    ['sentiment_news', 'sentiment_reviews', 'sentiment_search']\n",
+					"].fillna(0)"
+				],
+				"execution_count": 118
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df.head(10)"
+				],
+				"execution_count": 119
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from sklearn.preprocessing import MinMaxScaler\n",
+					"\n",
+					"# Select features and target\n",
+					"features = ['Open', 'High', 'Low', 'Close', 'Volume', \n",
+					"            'sentiment_news', 'sentiment_reviews', 'sentiment_search']\n",
+					"\n",
+					"# Create a copy to preserve original\n",
+					"df_lstm = df[['date'] + features].copy()\n",
+					"\n",
+					"# Drop any remaining nulls (e.g., from missing sentiment data)\n",
+					"df_lstm.dropna(inplace=True)\n",
+					"\n",
+					"# Initialize scaler\n",
+					"scaler = MinMaxScaler()\n",
+					"scaled_values = scaler.fit_transform(df_lstm[features])"
+				],
+				"execution_count": 120
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import numpy as np\n",
+					"\n",
+					"sequence_length = 30  # use past 30 days to predict next day\n",
+					"X = []\n",
+					"y = []\n",
+					"\n",
+					"for i in range(sequence_length, len(scaled_values)):\n",
+					"    X.append(scaled_values[i-sequence_length:i])   # input sequence\n",
+					"    y.append(scaled_values[i][3])  # target = 'Close' price (index 3)\n",
+					"\n",
+					"X = np.array(X)\n",
+					"y = np.array(y)"
+				],
+				"execution_count": 122
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"print(\"X shape:\", X.shape)  # Expected: (samples, 30, 8)\n",
+					"print(\"y shape:\", y.shape)  # Expected: (samples,)"
+				],
+				"execution_count": 123
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Use 80% of the data for training, 20% for testing\n",
+					"train_size = int(len(X) * 0.8)\n",
+					"\n",
+					"X_train, X_test = X[:train_size], X[train_size:]\n",
+					"y_train, y_test = y[:train_size], y[train_size:]"
+				],
+				"execution_count": 124
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from tensorflow.keras.models import Sequential\n",
+					"from tensorflow.keras.layers import LSTM, Dense, Dropout\n",
+					"\n",
+					"model = Sequential()\n",
+					"model.add(LSTM(64, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])))\n",
+					"model.add(Dropout(0.2))\n",
+					"model.add(LSTM(64))\n",
+					"model.add(Dropout(0.2))\n",
+					"model.add(Dense(1))  # output layer\n",
+					"\n",
+					"model.compile(optimizer='adam', loss='mean_squared_error')"
+				],
+				"execution_count": 125
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"history = model.fit(\n",
+					"    X_train, y_train,\n",
+					"    epochs=50,\n",
+					"    batch_size=32,\n",
+					"    validation_data=(X_test, y_test),\n",
+					"    verbose=1\n",
+					")"
+				],
+				"execution_count": 126
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Make predictions\n",
+					"predictions = model.predict(X_test)"
+				],
+				"execution_count": 127
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Only use the Close column for inverse transform\n",
+					"# Create an array of zeros with the same shape as the original feature set\n",
+					"predicted_prices = np.zeros((len(predictions), len(features)))\n",
+					"actual_prices = np.zeros((len(y_test), len(features)))\n",
+					"\n",
+					"# Place the predicted and actual close prices in the correct column (index 3 for 'Close')\n",
+					"predicted_prices[:, 3] = predictions[:, 0]\n",
+					"actual_prices[:, 3] = y_test\n",
+					"\n",
+					"# Inverse transform\n",
+					"predicted_close = scaler.inverse_transform(predicted_prices)[:, 3]\n",
+					"actual_close = scaler.inverse_transform(actual_prices)[:, 3]"
+				],
+				"execution_count": 128
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import matplotlib.pyplot as plt\n",
+					"\n",
+					"plt.figure(figsize=(12,6))\n",
+					"plt.plot(actual_close, label='Actual Closing Price')\n",
+					"plt.plot(predicted_close, label='Predicted Closing Price')\n",
+					"plt.title('LSTM Model — Apple Stock Price Prediction')\n",
+					"plt.xlabel('Time')\n",
+					"plt.ylabel('Price')\n",
+					"plt.legend()\n",
+					"plt.grid(True)\n",
+					"plt.show()"
+				],
+				"execution_count": 129
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from sklearn.metrics import mean_squared_error\n",
+					"import numpy as np\n",
+					"\n",
+					"rmse = np.sqrt(mean_squared_error(actual_close, predicted_close))\n",
+					"print(\"Root Mean Squared Error:\", rmse)"
+				],
+				"execution_count": 130
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					""
+				],
+				"execution_count": null
+			}
+		]
+	}
+}
