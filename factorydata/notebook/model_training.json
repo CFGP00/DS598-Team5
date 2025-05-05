@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "51900f09-10bf-4f6b-a1dc-d43f45b85938"
+				"spark.autotune.trackingId": "a59cec98-aef5-4ce0-a255-b36e83c6cad6"
 			}
 		},
 		"metadata": {
@@ -532,6 +532,58 @@
 					"lstm_results.head(20)"
 				],
 				"execution_count": 422
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import pyarrow as pa\n",
+					"import pyarrow.parquet as pq\n",
+					"\n",
+					"# 1. Convert pandas DataFrame to Parquet format in memory\n",
+					"buffer = BytesIO()\n",
+					"table = pa.Table.from_pandas(lstm_results)\n",
+					"pq.write_table(table, buffer)\n",
+					"buffer.seek(0)  # Reset buffer position\n",
+					"\n",
+					"# 2. Define the path within your Gold layer in the container\n",
+					"filename = \"Gold/lstm_pred.parquet\"\n",
+					"\n",
+					"# 3. Initialize BlobServiceClient\n",
+					"connection_string = os.getenv(\"AZURE_STORAGE_CONNECTION_STRING\")\n",
+					"blob_service_client = BlobServiceClient.from_connection_string(connection_string)\n",
+					"blob_client = blob_service_client.get_blob_client(container=\"team5container\", blob=filename)\n",
+					"\n",
+					"# 4. Upload Parquet file to Blob Storage\n",
+					"blob_client.upload_blob(buffer, overwrite=True)\n",
+					"print(f\"File uploaded successfully to Blob Storage: {filename}\")"
+				],
+				"execution_count": 425
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import pyarrow as pa\n",
+					"import pyarrow.parquet as pq\n",
+					"\n",
+					"# 1. Convert pandas DataFrame to Parquet format in memory\n",
+					"buffer = BytesIO()\n",
+					"table = pa.Table.from_pandas(df)\n",
+					"pq.write_table(table, buffer)\n",
+					"buffer.seek(0)  # Reset buffer position\n",
+					"\n",
+					"# 2. Define the path within your Gold layer in the container\n",
+					"filename = \"Gold/stock_sentiment_data.parquet\"\n",
+					"\n",
+					"# 3. Initialize BlobServiceClient\n",
+					"connection_string = os.getenv(\"AZURE_STORAGE_CONNECTION_STRING\")\n",
+					"blob_service_client = BlobServiceClient.from_connection_string(connection_string)\n",
+					"blob_client = blob_service_client.get_blob_client(container=\"team5container\", blob=filename)\n",
+					"\n",
+					"# 4. Upload Parquet file to Blob Storage\n",
+					"blob_client.upload_blob(buffer, overwrite=True)\n",
+					"print(f\"File uploaded successfully to Blob Storage: {filename}\")"
+				],
+				"execution_count": 426
 			},
 			{
 				"cell_type": "code",
