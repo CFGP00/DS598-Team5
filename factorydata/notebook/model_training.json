@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "c95e1b1c-7e69-40ef-a242-02755c543408"
+				"spark.autotune.trackingId": "51900f09-10bf-4f6b-a1dc-d43f45b85938"
 			}
 		},
 		"metadata": {
@@ -208,69 +208,74 @@
 					"         .merge(df_reviews, on='date', how='left') \\\n",
 					"         .merge(df_search, on='date', how='left')"
 				],
-				"execution_count": 109
+				"execution_count": 280
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"df[['sentiment_news', 'sentiment_reviews', 'sentiment_search']] = df[\n",
-					"    ['sentiment_news', 'sentiment_reviews', 'sentiment_search']\n",
-					"].fillna(0)"
+					"# Keep the first occurrence for each unique date\n",
+					"df = df.drop_duplicates(subset='date', keep='first').reset_index(drop=True)\n",
+					"df['sentiment_news'] = pd.to_numeric(df['sentiment_news'], errors='coerce').fillna(0).astype(int)\n",
+					"df['sentiment_reviews'] = pd.to_numeric(df['sentiment_reviews'], errors='coerce').fillna(0).astype(int)\n",
+					"df['sentiment_search'] = pd.to_numeric(df['sentiment_search'], errors='coerce').fillna(0).astype(int)"
 				],
-				"execution_count": 110
+				"execution_count": 289
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"df.head(10)"
 				],
-				"execution_count": 111
+				"execution_count": 290
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df['sentiment_reviews'].value_counts()"
+				],
+				"execution_count": 291
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"df.shape"
 				],
-				"execution_count": 112
+				"execution_count": 292
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd\n",
+					"\n",
+					"# Ensure datetime\n",
+					"df['date'] = pd.to_datetime(df['date'])\n",
+					"\n",
+					"# Sort by date\n",
+					"df = df.sort_values('date').reset_index(drop=True)\n",
+					"\n",
+					"# Optional sanity check\n",
+					"df[['date', 'Close', 'Open', 'High', 'Low', 'Volume', 'sentiment_news', 'sentiment_reviews', 'sentiment_search']].head()"
+				],
+				"execution_count": 400
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"features = df[['Open', 'High', 'Low', 'Close', 'Volume', \n",
+					"               'sentiment_news', 'sentiment_reviews', 'sentiment_search']]\n",
+					"target_col = 'Close'"
+				],
+				"execution_count": 401
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"from sklearn.preprocessing import MinMaxScaler\n",
 					"\n",
-					"# Select features and target\n",
-					"features = ['Open', 'High', 'Low', 'Close', 'Volume', \n",
-					"            'sentiment_news', 'sentiment_reviews', 'sentiment_search']\n",
-					"\n",
-					"# Create a copy to preserve original\n",
-					"df_lstm = df[['date'] + features].copy()\n",
-					"\n",
-					"# Drop any remaining nulls (e.g., from missing sentiment data)\n",
-					"df_lstm.dropna(inplace=True)\n",
-					"\n",
-					"# Initialize scaler\n",
 					"scaler = MinMaxScaler()\n",
-					"scaled_values = scaler.fit_transform(df_lstm[features])"
+					"scaled_features = scaler.fit_transform(features)"
 				],
-				"execution_count": 113
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"import numpy as np\n",
-					"\n",
-					"sequence_length = 30  # use past 30 days to predict next day\n",
-					"X = []\n",
-					"y = []\n",
-					"\n",
-					"for i in range(sequence_length, len(scaled_values)):\n",
-					"    X.append(scaled_values[i-sequence_length:i])   # input sequence\n",
-					"    y.append(scaled_values[i][3])  # target = 'Close' price (index 3)\n",
-					"\n",
-					"X = np.array(X)\n",
-					"y = np.array(y)"
-				],
-				"execution_count": 114
+				"execution_count": 402
 			},
 			{
 				"cell_type": "code",
@@ -278,16 +283,33 @@
 					"print(\"X shape:\", X.shape)  # Expected: (samples, 30, 8)\n",
 					"print(\"y shape:\", y.shape)  # Expected: (samples,)"
 				],
-				"execution_count": 115
+				"execution_count": 405
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"train_size = int(len(X) * 0.8)\n",
-					"X_train, X_val = X[:train_size], X[train_size:]\n",
-					"y_train, y_val = y[:train_size], y[train_size:]"
+					"import numpy as np\n",
+					"\n",
+					"window_size = 30\n",
+					"X = []\n",
+					"y = []\n",
+					"\n",
+					"for i in range(window_size, len(scaled_features)):\n",
+					"    X.append(scaled_features[i-window_size:i])\n",
+					"    y.append(scaled_features[i][3])  # 3 is index of 'Close' in features\n",
+					"\n",
+					"X, y = np.array(X), np.array(y)"
 				],
-				"execution_count": 116
+				"execution_count": 404
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"split_index = int(len(X) * 0.8)\n",
+					"X_train, X_val = X[:split_index], X[split_index:]\n",
+					"y_train, y_val = y[:split_index], y[split_index:]"
+				],
+				"execution_count": 406
 			},
 			{
 				"cell_type": "code",
@@ -304,7 +326,7 @@
 					"model.add(Dropout(0.2))\n",
 					"model.add(Dense(1))\n",
 					"\n",
-					"model.compile(optimizer=Adam(learning_rate=0.001), loss='mse')\n",
+					"model.compile(optimizer=Adam(learning_rate=0.0005), loss='mse')\n",
 					"\n",
 					"early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)\n",
 					"\n",
@@ -312,55 +334,29 @@
 					"    X_train, y_train,\n",
 					"    validation_data=(X_val, y_val),\n",
 					"    epochs=50,\n",
-					"    batch_size=256,\n",
+					"    batch_size=8,\n",
 					"    callbacks=[early_stop],\n",
 					"    verbose=1\n",
 					")"
 				],
-				"execution_count": 117
+				"execution_count": 407
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"# Make predictions\n",
-					"predictions = model.predict(X_val)"
-				],
-				"execution_count": 119
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"# Only use the Close column for inverse transform\n",
-					"# Create an array of zeros with the same shape as the original feature set\n",
-					"predicted_prices = np.zeros((len(predictions), len(features)))\n",
-					"actual_prices = np.zeros((len(y_val), len(features)))\n",
+					"predictions = model.predict(X_val)\n",
 					"\n",
-					"# Place the predicted and actual close prices in the correct column (index 3 for 'Close')\n",
-					"predicted_prices[:, 3] = predictions[:, 0]\n",
-					"actual_prices[:, 3] = y_val\n",
+					"# Inverse transform only the 'Close' column\n",
+					"predicted_full = np.zeros((len(predictions), scaled_features.shape[1]))\n",
+					"actual_full = np.zeros((len(y_val), scaled_features.shape[1]))\n",
 					"\n",
-					"# Inverse transform\n",
-					"predicted_close = scaler.inverse_transform(predicted_prices)[:, 3]\n",
-					"actual_close = scaler.inverse_transform(actual_prices)[:, 3]"
-				],
-				"execution_count": 121
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"import matplotlib.pyplot as plt\n",
+					"predicted_full[:, 3] = predictions[:, 0]\n",
+					"actual_full[:, 3] = y_val\n",
 					"\n",
-					"plt.figure(figsize=(12,6))\n",
-					"plt.plot(actual_close, label='Actual Closing Price')\n",
-					"plt.plot(predicted_close, label='Predicted Closing Price')\n",
-					"plt.title('LSTM Model — Apple Stock Price Prediction')\n",
-					"plt.xlabel('Time')\n",
-					"plt.ylabel('Price')\n",
-					"plt.legend()\n",
-					"plt.grid(True)\n",
-					"plt.show()"
+					"predicted_close = scaler.inverse_transform(predicted_full)[:, 3]\n",
+					"actual_close = scaler.inverse_transform(actual_full)[:, 3]"
 				],
-				"execution_count": 122
+				"execution_count": 408
 			},
 			{
 				"cell_type": "code",
@@ -369,9 +365,30 @@
 					"import numpy as np\n",
 					"\n",
 					"rmse = np.sqrt(mean_squared_error(actual_close, predicted_close))\n",
-					"print(\"Root Mean Squared Error:\", rmse)"
+					"print(f\"Root Mean Squared Error: {rmse:.2f}\")"
 				],
-				"execution_count": 123
+				"execution_count": 409
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import matplotlib.pyplot as plt\n",
+					"\n",
+					"# Get test dates (aligned with validation set)\n",
+					"test_dates = df['date'][window_size + split_index:]\n",
+					"\n",
+					"plt.figure(figsize=(14, 7))\n",
+					"plt.plot(test_dates, actual_close, label='Actual Closing Price', color='blue')\n",
+					"plt.plot(test_dates, predicted_close, label='Predicted Closing Price', color='orange')\n",
+					"plt.title(\"LSTM Model — Apple Stock Price Prediction\")\n",
+					"plt.xlabel(\"Date\")\n",
+					"plt.ylabel(\"Price\")\n",
+					"plt.legend()\n",
+					"plt.grid(True)\n",
+					"plt.tight_layout()\n",
+					"plt.show()"
+				],
+				"execution_count": 410
 			},
 			{
 				"cell_type": "code",
@@ -389,41 +406,7 @@
 					"plt.show()\n",
 					""
 				],
-				"execution_count": 124
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"# Step 1: Make sure the date column is sorted and in datetime format\n",
-					"df['date'] = pd.to_datetime(df['date'])\n",
-					"df = df.sort_values('date')\n",
-					"\n",
-					"# Step 2: Get the dates corresponding to X (after window slicing)\n",
-					"# Example: if X shape is (149086, 30, 8), that means we lose the first 30 dates\n",
-					"valid_dates = df['date'].values[30:]\n",
-					"\n",
-					"# Step 3: Now split into train and test the same way you split X\n",
-					"train_size = int(len(valid_dates) * 0.8)\n",
-					"test_dates = valid_dates[train_size:]  # Aligns with X_test and y_test"
-				],
-				"execution_count": 125
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"plt.figure(figsize=(12, 6))\n",
-					"plt.plot(test_dates, actual_close, label='Actual Closing Price', color='blue')\n",
-					"plt.plot(test_dates, predicted_close, label='Predicted Closing Price', color='orange')\n",
-					"plt.title(\"LSTM Model — Apple Stock Price Prediction\")\n",
-					"plt.xlabel(\"Date\")\n",
-					"plt.ylabel(\"Price\")\n",
-					"plt.legend()\n",
-					"plt.xticks(rotation=45)\n",
-					"plt.grid(True)\n",
-					"plt.tight_layout()\n",
-					"plt.show()"
-				],
-				"execution_count": 126
+				"execution_count": 411
 			},
 			{
 				"cell_type": "code",
@@ -455,7 +438,7 @@
 					"predicted_close_apr21 = scaler.inverse_transform(temp_array)[0, 3]\n",
 					"print(f\"📈 Predicted Closing Price for April 21, 2025: ${predicted_close_apr21:.2f}\")"
 				],
-				"execution_count": 127
+				"execution_count": 412
 			},
 			{
 				"cell_type": "code",
@@ -470,7 +453,7 @@
 					"plt.grid(True)\n",
 					"plt.show()"
 				],
-				"execution_count": 159
+				"execution_count": 413
 			},
 			{
 				"cell_type": "code",
@@ -483,23 +466,7 @@
 					"print(f\"MAE: {mae:.4f}\")\n",
 					"print(f\"R² Score: {r2:.4f}\")"
 				],
-				"execution_count": 160
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"import seaborn as sns\n",
-					"\n",
-					"correlation_matrix = df[['Open', 'High', 'Low', 'Close', 'Volume', \n",
-					"                         'sentiment_news', 'sentiment_reviews', 'sentiment_search']].corr()\n",
-					"\n",
-					"plt.figure(figsize=(10, 6))\n",
-					"sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=\".2f\")\n",
-					"plt.title(\"Correlation Heatmap: Stock Metrics & Sentiments\")\n",
-					"plt.tight_layout()\n",
-					"plt.show()"
-				],
-				"execution_count": 162
+				"execution_count": 414
 			},
 			{
 				"cell_type": "code",
@@ -513,7 +480,7 @@
 					"# Closing price trend\n",
 					"plt.figure(figsize=(14, 5))\n",
 					"plt.plot(df_h['date'], df_h['Close'], label='Close Price')\n",
-					"plt.title('Apple Closing Price Over Time')\n",
+					"plt.title('AAPL Closing Price Over Time')\n",
 					"plt.xlabel('Date')\n",
 					"plt.ylabel('Price')\n",
 					"plt.grid(True)\n",
@@ -530,7 +497,7 @@
 					"plt.legend()\n",
 					"plt.show()"
 				],
-				"execution_count": 169
+				"execution_count": 416
 			},
 			{
 				"cell_type": "code",
@@ -550,68 +517,21 @@
 					"plt.title('Product Review Sentiment Distribution')\n",
 					"plt.show()"
 				],
-				"execution_count": 196
+				"execution_count": 417
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"sentiment_map = {\n",
-					"    'positive': 1,\n",
-					"    'neutral': 0,\n",
-					"    'negative': -1\n",
-					"}"
-				],
-				"execution_count": 185
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"df_n['sentiment_score'] = df_n['sentiment'].map(sentiment_map)\n",
-					"news_trend = df_n.groupby('date')['sentiment'].mean()\n",
+					"# Now you can create the LSTM results DataFrame\n",
+					"lstm_results = pd.DataFrame({\n",
+					"    'date': test_dates,\n",
+					"    'actual_close': actual_close,\n",
+					"    'predicted_close': predicted_close\n",
+					"})\n",
 					"\n",
-					"plt.figure(figsize=(14, 4))\n",
-					"news_trend.plot(color='green')\n",
-					"plt.title('Average News Sentiment Over Time')\n",
-					"plt.xlabel('Date')\n",
-					"plt.ylabel('Sentiment Score')\n",
-					"plt.grid(True)\n",
-					"plt.tight_layout()\n",
-					"plt.show()"
+					"lstm_results.head(20)"
 				],
-				"execution_count": 186
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"review_trend = df.groupby('date')['sentiment_reviews'].mean()\n",
-					"\n",
-					"plt.figure(figsize=(14, 4))\n",
-					"review_trend.plot(color='purple')\n",
-					"plt.title('Average Product Review Sentiment Over Time')\n",
-					"plt.xlabel('Date')\n",
-					"plt.ylabel('Sentiment Score')\n",
-					"plt.grid(True)\n",
-					"plt.tight_layout()\n",
-					"plt.show()"
-				],
-				"execution_count": 193
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"df_t['sentiment_score'] = df_t['sentiment'].map(sentiment_map)\n",
-					"trend_sentiment = df_t.groupby('date')['sentiment'].mean()\n",
-					"\n",
-					"plt.figure(figsize=(14, 4))\n",
-					"trend_sentiment.plot(color='red', marker='o')\n",
-					"plt.title('Search Trends Sentiment Over Time')\n",
-					"plt.xlabel('Date')\n",
-					"plt.ylabel('Sentiment Score')\n",
-					"plt.grid(True)\n",
-					"plt.tight_layout()\n",
-					"plt.show()"
-				],
-				"execution_count": 192
+				"execution_count": 422
 			},
 			{
 				"cell_type": "code",
