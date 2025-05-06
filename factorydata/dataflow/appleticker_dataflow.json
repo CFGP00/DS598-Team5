@@ -18,7 +18,11 @@
 						"referenceName": "tickersink",
 						"type": "DatasetReference"
 					},
-					"name": "AppleSink"
+					"name": "AppleSink",
+					"rejectedDataLinkedService": {
+						"referenceName": "team5service",
+						"type": "LinkedServiceReference"
+					}
 				}
 			],
 			"transformations": [
