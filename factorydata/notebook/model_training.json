@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "a59cec98-aef5-4ce0-a255-b36e83c6cad6"
+				"spark.autotune.trackingId": "406e1e23-72dc-4cb2-9441-10788a79fffc"
 			}
 		},
 		"metadata": {
@@ -70,7 +70,7 @@
 					"df_h = pd.read_parquet(stream)\n",
 					"df_h.head()"
 				],
-				"execution_count": 100
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -90,7 +90,7 @@
 					"df_n = pd.read_parquet(stream)\n",
 					"df_n.head()"
 				],
-				"execution_count": 101
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
@@ -110,7 +110,7 @@
 					"df_r = pd.read_parquet(stream)\n",
 					"df_r.head()"
 				],
-				"execution_count": 102
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
@@ -130,7 +130,7 @@
 					"df_t = pd.read_parquet(stream)\n",
 					"df_t.head()"
 				],
-				"execution_count": 103
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -146,7 +146,7 @@
 					"df_r['sentiment'] = df_r['sentiment'].map(sentiment_map)\n",
 					"df_t['sentiment'] = df_t['sentiment'].map(sentiment_map)"
 				],
-				"execution_count": 104
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -159,7 +159,7 @@
 					"df_reviews_daily = df_r.groupby('date', as_index=False)['sentiment'].mean()\n",
 					"df_reviews_daily.rename(columns={'sentiment': 'sentiment_reviews'}, inplace=True)"
 				],
-				"execution_count": 105
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -171,7 +171,7 @@
 					"df_search_daily = df_t.set_index('date').resample('D').ffill().reset_index()\n",
 					"df_search_daily.rename(columns={'sentiment': 'sentiment_search'}, inplace=True)"
 				],
-				"execution_count": 106
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -187,17 +187,18 @@
 					"# Search trend sentiment (already resampled in earlier step)\n",
 					"df_search = df_search_daily[['date', 'sentiment_search']].copy()"
 				],
-				"execution_count": 107
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
 				"source": [
+					"df_h.rename(columns={'Trade_date': 'date'}, inplace=True)\n",
 					"df_h['date'] = pd.to_datetime(df_h['date'])\n",
 					"df_news['date'] = pd.to_datetime(df_news['date'])\n",
 					"df_reviews['date'] = pd.to_datetime(df_reviews['date'])\n",
 					"df_search['date'] = pd.to_datetime(df_search['date'])"
 				],
-				"execution_count": 108
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
@@ -208,7 +209,7 @@
 					"         .merge(df_reviews, on='date', how='left') \\\n",
 					"         .merge(df_search, on='date', how='left')"
 				],
-				"execution_count": 280
+				"execution_count": 19
 			},
 			{
 				"cell_type": "code",
@@ -219,28 +220,28 @@
 					"df['sentiment_reviews'] = pd.to_numeric(df['sentiment_reviews'], errors='coerce').fillna(0).astype(int)\n",
 					"df['sentiment_search'] = pd.to_numeric(df['sentiment_search'], errors='coerce').fillna(0).astype(int)"
 				],
-				"execution_count": 289
+				"execution_count": 20
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"df.head(10)"
 				],
-				"execution_count": 290
+				"execution_count": 21
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"df['sentiment_reviews'].value_counts()"
 				],
-				"execution_count": 291
+				"execution_count": 22
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"df.shape"
 				],
-				"execution_count": 292
+				"execution_count": 23
 			},
 			{
 				"cell_type": "code",
@@ -256,7 +257,7 @@
 					"# Optional sanity check\n",
 					"df[['date', 'Close', 'Open', 'High', 'Low', 'Volume', 'sentiment_news', 'sentiment_reviews', 'sentiment_search']].head()"
 				],
-				"execution_count": 400
+				"execution_count": 24
 			},
 			{
 				"cell_type": "code",
@@ -265,7 +266,7 @@
 					"               'sentiment_news', 'sentiment_reviews', 'sentiment_search']]\n",
 					"target_col = 'Close'"
 				],
-				"execution_count": 401
+				"execution_count": 25
 			},
 			{
 				"cell_type": "code",
@@ -275,15 +276,7 @@
 					"scaler = MinMaxScaler()\n",
 					"scaled_features = scaler.fit_transform(features)"
 				],
-				"execution_count": 402
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"print(\"X shape:\", X.shape)  # Expected: (samples, 30, 8)\n",
-					"print(\"y shape:\", y.shape)  # Expected: (samples,)"
-				],
-				"execution_count": 405
+				"execution_count": 26
 			},
 			{
 				"cell_type": "code",
@@ -300,7 +293,15 @@
 					"\n",
 					"X, y = np.array(X), np.array(y)"
 				],
-				"execution_count": 404
+				"execution_count": 28
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"print(\"X shape:\", X.shape)  # Expected: (samples, 30, 8)\n",
+					"print(\"y shape:\", y.shape)  # Expected: (samples,)"
+				],
+				"execution_count": 29
 			},
 			{
 				"cell_type": "code",
@@ -309,7 +310,7 @@
 					"X_train, X_val = X[:split_index], X[split_index:]\n",
 					"y_train, y_val = y[:split_index], y[split_index:]"
 				],
-				"execution_count": 406
+				"execution_count": 30
 			},
 			{
 				"cell_type": "code",
@@ -339,7 +340,7 @@
 					"    verbose=1\n",
 					")"
 				],
-				"execution_count": 407
+				"execution_count": 31
 			},
 			{
 				"cell_type": "code",
@@ -356,7 +357,7 @@
 					"predicted_close = scaler.inverse_transform(predicted_full)[:, 3]\n",
 					"actual_close = scaler.inverse_transform(actual_full)[:, 3]"
 				],
-				"execution_count": 408
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
@@ -367,7 +368,7 @@
 					"rmse = np.sqrt(mean_squared_error(actual_close, predicted_close))\n",
 					"print(f\"Root Mean Squared Error: {rmse:.2f}\")"
 				],
-				"execution_count": 409
+				"execution_count": 33
 			},
 			{
 				"cell_type": "code",
@@ -388,7 +389,7 @@
 					"plt.tight_layout()\n",
 					"plt.show()"
 				],
-				"execution_count": 410
+				"execution_count": 34
 			},
 			{
 				"cell_type": "code",
@@ -406,7 +407,7 @@
 					"plt.show()\n",
 					""
 				],
-				"execution_count": 411
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
@@ -435,10 +436,10 @@
 					"temp_array = np.zeros((1, scaled_features.shape[1]))\n",
 					"temp_array[0, ] = predicted_scaled_close  \n",
 					"\n",
-					"predicted_close_apr21 = scaler.inverse_transform(temp_array)[0, 3]\n",
-					"print(f\"📈 Predicted Closing Price for April 21, 2025: ${predicted_close_apr21:.2f}\")"
+					"predicted_close_may6 = scaler.inverse_transform(temp_array)[0, 3]\n",
+					"print(f\"📈 Predicted Closing Price for May 6, 2025: ${predicted_close_may6:.2f}\")"
 				],
-				"execution_count": 412
+				"execution_count": 37
 			},
 			{
 				"cell_type": "code",
@@ -453,7 +454,7 @@
 					"plt.grid(True)\n",
 					"plt.show()"
 				],
-				"execution_count": 413
+				"execution_count": 38
 			},
 			{
 				"cell_type": "code",
@@ -466,7 +467,7 @@
 					"print(f\"MAE: {mae:.4f}\")\n",
 					"print(f\"R² Score: {r2:.4f}\")"
 				],
-				"execution_count": 414
+				"execution_count": 39
 			},
 			{
 				"cell_type": "code",
@@ -497,7 +498,7 @@
 					"plt.legend()\n",
 					"plt.show()"
 				],
-				"execution_count": 416
+				"execution_count": 40
 			},
 			{
 				"cell_type": "code",
@@ -517,7 +518,7 @@
 					"plt.title('Product Review Sentiment Distribution')\n",
 					"plt.show()"
 				],
-				"execution_count": 417
+				"execution_count": 41
 			},
 			{
 				"cell_type": "code",
@@ -531,7 +532,7 @@
 					"\n",
 					"lstm_results.head(20)"
 				],
-				"execution_count": 422
+				"execution_count": 42
 			},
 			{
 				"cell_type": "code",
@@ -557,7 +558,7 @@
 					"blob_client.upload_blob(buffer, overwrite=True)\n",
 					"print(f\"File uploaded successfully to Blob Storage: {filename}\")"
 				],
-				"execution_count": 425
+				"execution_count": 43
 			},
 			{
 				"cell_type": "code",
@@ -583,7 +584,7 @@
 					"blob_client.upload_blob(buffer, overwrite=True)\n",
 					"print(f\"File uploaded successfully to Blob Storage: {filename}\")"
 				],
-				"execution_count": 426
+				"execution_count": 44
 			},
 			{
 				"cell_type": "code",
