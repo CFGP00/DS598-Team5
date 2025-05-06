@@ -19,9 +19,9 @@
 						"referenceName": "appleticker_dataflow",
 						"type": "DataFlowReference"
 					},
-					"integrationRuntime": {
-						"referenceName": "integrationRuntime1",
-						"type": "IntegrationRuntimeReference"
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
 					},
 					"traceLevel": "Fine"
 				}
